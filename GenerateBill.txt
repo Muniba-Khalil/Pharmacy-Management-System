@@ -1,0 +1,103 @@
+package com.example.pharmacymanagementsystem;
+
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.util.List;
+
+public class GenerateBill extends Application {
+    private Stage mainStage;
+    private Bill bill = new Bill();
+    private Label resultLabel; // Label to display result
+
+    public GenerateBill(Stage stage) {
+        this.mainStage = stage;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        Label billLabel = new Label("Generate Customer Bill");
+        billLabel.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #013220;");
+        Label nameLabel = new Label("Enter Medicine Name:");
+        nameLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220");
+        TextField nameField = new TextField();
+        nameField.setStyle("-fx-border-color: #a7c45c;");
+
+        Label quantityLabel = new Label("Enter Quantity:");
+        quantityLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        TextField quantityField = new TextField();
+        quantityField.setStyle("-fx-border-color: #a7c45c;");
+
+        resultLabel = new Label(); // Label to display result
+        resultLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+
+        Button addButton = new Button("Add to Bill");
+        addButton.setPrefSize(150.0,20.00);
+        addButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        addButton.setOnAction(e -> {
+            String medicineName = nameField.getText();
+            int medicineQuantity = Integer.parseInt(quantityField.getText());
+
+            boolean success = bill.addMedicineToBill(medicineName, medicineQuantity);
+            if (success) {
+                resultLabel.setText("Medicine added to bill.");
+            } else {
+                resultLabel.setText("Medicine not found or insufficient quantity.");
+            }
+
+            nameField.clear();
+            quantityField.clear();
+        });
+
+
+        Button printBillButton = new Button("Print Bill");
+        printBillButton.setPrefSize(150.0,20.00);
+        printBillButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        printBillButton.setOnAction(e -> {
+            printBill();
+        });
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(billLabel, nameLabel, nameField, quantityLabel, quantityField, addButton, printBillButton, resultLabel);
+
+        Scene scene = new Scene(root, 500, 600); // Set scene size
+        primaryStage.setTitle("Generate Bill");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void printBill() {
+        VBox billDetails = new VBox(10);
+        billDetails.setAlignment(Pos.CENTER);
+        billDetails.setPadding(new Insets(20));
+
+        Label billLabel = new Label("Bill:\n");
+        billLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        billDetails.getChildren().add(billLabel);
+
+        List<Medicine> medicinesInBill = bill.getMedicinesInBill();
+        for (Medicine medicine : medicinesInBill) {
+            Label medicineLabel = new Label(medicine.getName() + " - Quantity: " + medicine.getQuantity() + " - Price: " + medicine.getPrice());
+            billDetails.getChildren().add(medicineLabel);
+        }
+
+        Label totalAmountLabel = new Label("Total Amount: " + bill.getTotalAmount());
+        totalAmountLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        billDetails.getChildren().add(totalAmountLabel);
+
+        Scene billScene = new Scene(billDetails, 500, 600); // Set scene size
+        Stage billStage = new Stage();
+        billStage.setTitle("Bill Details");
+        billStage.setScene(billScene);
+        billStage.show();
+    }
+}

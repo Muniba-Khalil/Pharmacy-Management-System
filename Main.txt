@@ -1,0 +1,150 @@
+package com.example.pharmacymanagementsystem;
+
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
+public class Main extends Application {
+
+    private static final String PASSWORD = "123"; // setting password
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        Label titleLabel = new Label("PHARMACY MANAGEMENT SYSTEM");
+        titleLabel.setStyle("-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #005C29;");
+
+        Label passwordLabel = new Label("Enter Password:");
+        passwordLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        PasswordField passwordField = new PasswordField();
+        passwordField.setStyle("-fx-border-color: #a7c45c;");
+        passwordField.setPrefSize(50.0,20.0);
+
+        Button loginButton = new Button("Login");
+        loginButton.setPrefSize(100.0,20.00);
+        loginButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        loginButton.setOnAction(e -> {
+            String enteredPassword = passwordField.getText();
+            if (enteredPassword.equals(PASSWORD)) {
+                // Password is correct, proceed to the main interface
+                frontInterface(primaryStage);
+            } else {
+                // Password is incorrect, show error message
+                Label errorMessage = new Label("Incorrect password. Please try again.");
+                errorMessage.setStyle("-fx-text-fill: red;");
+                VBox root = (VBox) primaryStage.getScene().getRoot();
+                root.getChildren().add(errorMessage);
+            }
+        });
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(titleLabel, passwordLabel, passwordField, loginButton);
+
+        Scene scene = new Scene(root, 500, 600);
+        primaryStage.setTitle("Pharmacy Management System");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+    }
+
+    private void frontInterface(Stage primaryStage) {
+        Label label = new Label("Pharmacy Management System");
+        label.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #013220;");
+
+        Button manageMedicineButton = new Button("Manage Medicine");
+        manageMedicineButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        manageMedicineButton.setPrefSize(200.0, 15.0);
+        manageMedicineButton.setOnAction(e -> {
+            showMainInterface(primaryStage);
+        });
+
+        Button billButton = new Button("Generate Customer Bill");
+        billButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        billButton.setPrefSize(200.0, 15.0);
+        billButton.setOnAction(e -> {
+            GenerateBill bill = new GenerateBill(primaryStage);
+            bill.start(new Stage());
+        });
+
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(label, manageMedicineButton, billButton);
+
+        Scene scene = new Scene(root, 500, 600);
+        primaryStage.setTitle("Pharmacy Management System");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+
+    private void showMainInterface(Stage primaryStage) {
+        Label label = new Label("Manage Medicine");
+        label.setStyle("-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #013220;");
+
+        Button addMedicineButton = new Button("Add Medicine");
+        addMedicineButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        addMedicineButton.setPrefSize(200.0,15.0);
+        addMedicineButton.setOnAction(e -> {
+            AddMedicine addMedicine = new AddMedicine(primaryStage);
+            addMedicine.start(new Stage());
+        });
+
+        Button removeMedicineButton = new Button("Remove Medicine");
+        removeMedicineButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        removeMedicineButton.setPrefSize(200.0,15.0);
+        removeMedicineButton.setOnAction(e -> {
+            RemoveMedicine removeMedicine = new RemoveMedicine(primaryStage);
+            removeMedicine.start(new Stage());
+        });
+
+        Button viewMedicineButton = new Button("View Medicine");
+        viewMedicineButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        viewMedicineButton.setPrefSize(200.0,15.0);
+        viewMedicineButton.setOnAction(e -> {
+            ViewMedicine viewMedicine = new ViewMedicine(primaryStage);
+            viewMedicine.start(new Stage());
+        });
+
+        Button searchMedicineButton = new Button("Search Medicine");
+        searchMedicineButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        searchMedicineButton.setPrefSize(200.0,15.0);
+        searchMedicineButton.setOnAction(e -> {
+            SearchMedicine searchMedicine = new SearchMedicine(primaryStage);
+            searchMedicine.start(new Stage());
+        });
+
+        Button backButton = new Button("Back");
+        backButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        backButton.setPrefSize(90.0,15.0);
+        backButton.setOnAction(e -> {
+            frontInterface(primaryStage);
+        });
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(label, addMedicineButton, removeMedicineButton, viewMedicineButton, searchMedicineButton, backButton);
+
+        Scene scene = new Scene(root, 500, 600);
+        primaryStage.setTitle("Pharmacy Management System");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

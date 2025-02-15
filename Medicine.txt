@@ -1,0 +1,361 @@
+package com.example.pharmacymanagementsystem;
+
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class Medicine {
+    private String name;
+    private int quantity;
+    private String expirationDate;
+    private String manufacturer;
+    private String price;
+
+    public Medicine(String name, int quantity, String expirationDate, String manufacturer, String price) {
+        this.name = name;
+        this.quantity = quantity;
+        this.expirationDate = expirationDate;
+        this.manufacturer = manufacturer;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public String getExpirationDate() {
+        return expirationDate;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void saveToFile() {
+        synchronized (Medicine.fileLock) {
+            try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(Medicine.FILE_PATH, true)))) {
+                writer.println(name + " | " + quantity + " | " + expirationDate + " | " + manufacturer + " | " + price);
+            } catch (IOException e) {
+                System.err.println("Error writing to file: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void removeFromFile(String medicineName) {
+        synchronized (Medicine.fileLock) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(Medicine.FILE_PATH))) {
+                List<String> lines = new ArrayList<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(" \\| ");
+                    if (!parts[0].equals(medicineName)) {
+                        lines.add(line);
+                    }
+                }
+                try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(Medicine.FILE_PATH)))) {
+                    for (String lineToWrite : lines) {
+                        writer.println(lineToWrite);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error writing to file: " + e.getMessage());
+                }
+            } catch (IOException e) {
+                System.err.println("Error reading from file: " + e.getMessage());
+            }
+        }
+    }
+
+    public static String loadFromFile() {
+        synchronized (Medicine.fileLock) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(Medicine.FILE_PATH))) {
+                StringBuilder content = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+                return content.toString();
+            } catch (IOException e) {
+                System.err.println("Error reading from file: " + e.getMessage());
+                return "";
+            }
+        }
+    }
+
+    public static Medicine searchFromFile(String medicineName) {
+        synchronized (Medicine.fileLock) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(Medicine.FILE_PATH))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(" \\| ");
+                    if (parts[0].equals(medicineName)) {
+                        return new Medicine(parts[0], Integer.parseInt(parts[1]), parts[2], parts[3], parts[4]);
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Error reading from file: " + e.getMessage());
+            }
+            return null;
+        }
+    }
+
+    protected static final String FILE_PATH = "C://Users//PMYLS//IdeaProjects//PharmacyManagementSystem//src//main//java//com//example//pharmacymanagementsystem//medicine.txt"; // Configurable file path
+    protected static final Object fileLock = new Object(); // File lock
+}
+
+class AddMedicine extends Application {
+    private Stage mainStage;
+
+    public AddMedicine(Stage stage) {
+        this.mainStage = stage;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        Label nameLabel = new Label("Enter Medicine Name:");
+        Label quantityLabel = new Label("Enter Quantity:");
+        Label expirationDateLabel = new Label("Enter Expiration Date:");
+        Label manufacturerLabel = new Label("Enter Manufacturer:");
+        Label priceLabel = new Label("Enter Price:");
+
+        nameLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        quantityLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        expirationDateLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        manufacturerLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        priceLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+
+        TextField nameField = new TextField();
+        TextField quantityField = new TextField();
+        TextField expirationDateField = new TextField();
+        TextField manufacturerField = new TextField();
+        TextField priceField = new TextField();
+
+        nameField.setStyle("-fx-border-color: #a7c45c;");
+        quantityField.setStyle("-fx-border-color: #a7c45c;");
+        expirationDateField.setStyle("-fx-border-color: #a7c45c;");
+        manufacturerField.setStyle("-fx-border-color: #a7c45c;");
+        priceField.setStyle("-fx-border-color: #a7c45c;");
+
+        Button addButton = new Button("Add Medicine");
+        addButton.setPrefSize(200.0,15.00);
+        addButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        addButton.setOnAction(e -> {
+            String medicineName = nameField.getText();
+            int medicineQuantity = Integer.parseInt(quantityField.getText());
+            String expirationDate = expirationDateField.getText();
+            String manufacturer = manufacturerField.getText();
+            String price = priceField.getText();
+
+            Medicine medicine = new Medicine(medicineName, medicineQuantity, expirationDate, manufacturer, price);
+            medicine.saveToFile();
+
+            nameField.clear();
+            quantityField.clear();
+            expirationDateField.clear();
+            manufacturerField.clear();
+            priceField.clear();
+        });
+
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(nameLabel, nameField, quantityLabel, quantityField, expirationDateLabel, expirationDateField, manufacturerLabel, manufacturerField, priceLabel, priceField, addButton);
+
+        Scene scene = new Scene(root, 500, 600);
+        primaryStage.setTitle("Add Medicine");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+}
+
+class RemoveMedicine extends Application {
+    private Stage mainStage;
+
+    public RemoveMedicine(Stage stage) {
+        this.mainStage = stage;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        Label nameLabel = new Label("Enter Medicine Name:");
+        nameLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        TextField nameField = new TextField();
+        nameField.setStyle("-fx-border-color: #a7c45c;");
+
+        Label resultLabel = new Label(); // Label to display result
+        resultLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+
+        Button removeButton = new Button("Remove Medicine");
+        removeButton.setPrefSize(200.0,15.00);
+        removeButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        removeButton.setOnAction(e -> {
+            String medicineName = nameField.getText();
+            if (Medicine.searchFromFile(medicineName) != null) {
+                Medicine.removeFromFile(medicineName);
+                resultLabel.setText("Medicine removed successfully.");
+            } else {
+                resultLabel.setText("Medicine not found.");
+            }
+            nameField.clear();
+        });
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(nameLabel, nameField, removeButton, resultLabel);
+
+        Scene scene = new Scene(root, 500, 600); // Set scene size
+        primaryStage.setTitle("Remove Medicine");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+}
+
+class ViewMedicine extends Application {
+    private Stage mainStage;
+
+    public ViewMedicine(Stage stage) {
+        this.mainStage = stage;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        Label medicineListLabel = new Label("Medicine List:\n" + Medicine.loadFromFile());
+        medicineListLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(medicineListLabel);
+
+        Scene scene = new Scene(root, 500, 600); // Set scene size
+        primaryStage.setTitle("View Medicine");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+}
+
+class SearchMedicine extends Application {
+    private Stage mainStage;
+
+    public SearchMedicine(Stage stage) {
+        this.mainStage = stage;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        Label nameLabel = new Label("Enter Medicine Name:");
+        nameLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+        TextField nameField = new TextField();
+        nameField.setStyle("-fx-border-color: #a7c45c;");
+
+        Label resultLabel = new Label(); // Label to display result
+        resultLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #013220;");
+
+        Button searchButton = new Button("Search Medicine");
+        searchButton.setPrefSize(200.0,15.00);
+        searchButton.setStyle("-fx-background-color: #35612D; -fx-text-fill: white; -fx-font-size: 14;");
+        searchButton.setOnAction(e -> {
+            String medicineName = nameField.getText();
+            Medicine medicine = Medicine.searchFromFile(medicineName);
+            if (medicine != null) {
+                resultLabel.setText("Medicine Found: " + medicine.getName() + "\nQuantity: " + medicine.getQuantity() + "\nExpiration Date: " + medicine.getExpirationDate() + "\nManufacturer: " + medicine.getManufacturer() + "\nPrice: " + medicine.getPrice());
+            } else {
+                resultLabel.setText("Medicine Not Found");
+            }
+        });
+
+
+        VBox root = new VBox(10);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(20));
+        root.getChildren().addAll(nameLabel, nameField, searchButton, resultLabel);
+
+        Scene scene = new Scene(root, 500, 600); // Set scene size
+        primaryStage.setTitle("Search Medicine");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+}
+
+class Bill {
+    private List<Medicine> medicinesInBill = new ArrayList<>();
+    private double totalAmount = 0.0;
+
+    public List<Medicine> getMedicinesInBill() {
+        return medicinesInBill;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public boolean addMedicineToBill(String name, int quantity) {
+        Medicine medicine = Medicine.searchFromFile(name);
+        if (medicine != null && medicine.getQuantity() >= quantity) {
+            medicinesInBill.add(new Medicine(name, quantity, medicine.getExpirationDate(), medicine.getManufacturer(), medicine.getPrice()));
+            totalAmount += Double.parseDouble(medicine.getPrice()) * quantity;
+
+            // Update the quantity in the file
+            updateMedicineQuantity(name, medicine.getQuantity() - quantity);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public void printBill() {
+        System.out.println("Bill:");
+        for (Medicine medicine : medicinesInBill) {
+            System.out.println(medicine.getName() + " - Quantity: " + medicine.getQuantity() + " - Price: " + medicine.getPrice());
+        }
+        System.out.println("Total Amount: " + totalAmount);
+    }
+
+    private void updateMedicineQuantity(String name, int newQuantity) {
+        synchronized (Medicine.fileLock) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(Medicine.FILE_PATH))) {
+                List<String> lines = new ArrayList<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(" \\| ");
+                    if (parts[0].equals(name)) {
+                        parts[1] = String.valueOf(newQuantity);
+                        lines.add(String.join(" | ", parts));
+                    } else {
+                        lines.add(line);
+                    }
+                }
+                try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(Medicine.FILE_PATH)))) {
+                    for (String lineToWrite : lines) {
+                        writer.println(lineToWrite);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error writing to file: " + e.getMessage());
+                }
+            } catch (IOException e) {
+                System.err.println("Error reading from file: " + e.getMessage());
+            }
+        }
+    }
+}
+
